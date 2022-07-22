@@ -21,7 +21,7 @@ typedef struct NAND nand;
 
 // number of ports nand
 
-#define MAXNANDS 64
+#define MAXNANDS 4
 
 // hold last cyclic
 
@@ -30,7 +30,6 @@ typedef struct NAND nand;
 // limit for random tries
 
 #define MAXRANDOM 10000000
-
 
 int main (int argc, char * argv[]) {
 

@@ -1,118 +1,110 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
-enum for non cyclic solutions for nand connection matrices
-
-model for one 74hc00
-
-Alvaro Barcellos @2022
-
-*/
-
 #define MAX 200
-
-// number of ports nand 4
 
 int main (int argc, char * argv[]) {
 
-// generic values
-
     int n, m, p, q, i, j, k;
 
-    int z[200], d1, d2;
+    int c, d, ds[MAX];
 
-// hold the ports
+    int ip[8], op[5];
 
-    int in[8], ip[8], op[4];
+    // map connections, 0 none, 1 gate, 2 gate, 3 gate, 4 gate
+    // any input could have only one connection
+    // any output could have many connections
 
-// for one 74hc00, 4 ports NAND (A.B~C)
-// all possible combinations of inputs, 0 not connect, 1 connect 
-// is a 0000 to 1111 out ports to a input 0 to 15
+    for (ip[0] = 0; ip[0] < 5; ip[0]++) { 
+    for (ip[1] = 0; ip[1] < 5; ip[1]++) { 
+    for (ip[2] = 0; ip[2] < 5; ip[2]++) { 
+    for (ip[3] = 0; ip[3] < 5; ip[3]++) { 
+    for (ip[4] = 0; ip[4] < 5; ip[4]++) { 
+    for (ip[5] = 0; ip[5] < 5; ip[5]++) { 
+    for (ip[6] = 0; ip[6] < 5; ip[6]++) { 
+    for (ip[7] = 0; ip[7] < 5; ip[7]++) { 
 
+    /*
+    for (k = 0; k < 8; k++) {    
+        printf ("%1d|", ip[k]);
+        }
+    printf ("\n");
+    */
+
+    // if (0) {
+
+    // pull up init
+
+    op[0] = 0;
+
+    for (c = 0; c < 16; c++) {
+        op[1] = c & 0x1;
+        op[2] = c & 0x2;
+        op[3] = c & 0x4;
+        op[4] = c & 0x8;
     
-    for (in[0] = 0; in[0]  < 15; in[0]++) {
-    for (in[1] = 0; in[1]  < 15; in[1]++) {
-    for (in[2] = 0; in[2]  < 15; in[2]++) {
-    for (in[3] = 0; in[3]  < 15; in[3]++) {
-    for (in[4] = 0; in[4]  < 15; in[4]++) {
-    for (in[5] = 0; in[5]  < 15; in[5]++) {
-    for (in[6] = 0; in[6]  < 15; in[6]++) {
-    for (in[7] = 0; in[7]  < 15; in[7]++) {
 
-// pull down all outputs
+    // run 
 
-    for (k = 0; k < 4; k++ ) {
-        op[k] = 0x0;
-        } 
+    n = 0;
 
-// run anime
+    for (m = 0, n = 0; n < MAX; n++, m++ ) {
 
-    p = 0;
+    // gate 0 always 0, logics NANDS, p is bitwise result
 
-    for (n = m = 0; n < MAX; n++, m++) {
+        p = 0;
 
-        ip[0] = 0x0 | (op[0] & in[0] & 0x0001) | (op[1] & in[0] & 0x0010) | (op[2] &
-            in[0] & 0x0100) | (op[3] & in[0] & 0x1000);
-        ip[1] = 0x0 | (op[0] & in[1] & 0x0001) | (op[1] & in[1] & 0x0010) | (op[2] &
-            in[1] & 0x0100) | (op[3] & in[1] & 0x1000);
-        ip[2] = 0x0 | (op[0] & in[2] & 0x0001) | (op[1] & in[2] & 0x0010) | (op[2] &
-            in[2] & 0x0100) | (op[3] & in[2] & 0x1000);
-        ip[3] = 0x0 | (op[0] & in[3] & 0x0001) | (op[1] & in[3] & 0x0010) | (op[2] &
-            in[3] & 0x0100) | (op[3] & in[3] & 0x1000);
-        ip[4] = 0x0 | (op[0] & in[4] & 0x0001) | (op[1] & in[4] & 0x0010) | (op[2] &
-            in[4] & 0x0100) | (op[3] & in[4] & 0x1000);
-        ip[5] = 0x0 | (op[0] & in[5] & 0x0001) | (op[1] & in[5] & 0x0010) | (op[2] &
-            in[5] & 0x0100) | (op[3] & in[5] & 0x1000);
-        ip[6] = 0x0 | (op[0] & in[6] & 0x0001) | (op[1] & in[6] & 0x0010) | (op[2] &
-            in[6] & 0x0100) | (op[3] & in[6] & 0x1000);
-        ip[7] = 0x0 | (op[0] & in[7] & 0x0001) | (op[1] & in[7] & 0x0010) | (op[2] &
-            in[7] & 0x0100) | (op[3] & in[7] & 0x1000);
+        for (k = 0; k < 4; k++ ) {
+            
+            i = ip[ k * 2 ];
+            
+            j = ip[ i + 1 ];
 
-// do the nands
+            op[ k + 1 ] = ( ! ( op[i] & op[j] ) ) & 0x01;
 
-    q = 0x0;
-    for (k = 0; k < 4; k++ ) {
-        i = k * 2;
-        j = i + 1;
-        op[k] = (! (ip[i] & ip[j])) & 0x1;
-        q = q << 1 | op[k];
-        }
+            p = p << 1 | op[ k + 1 ];
 
-    z[n] = q;
-
-    if (p == q) n = MAX;    
-    else {
-        d2 = q - p;
-        if ( d2 + d1 == 0) n = MAX;
-        else {
-            p = q;
-            d1 = d2;
             }
+         
+         ds[m] = p;
+
+    // detect cycles
+
+         for (i = 0; i < m; i++) {
+
+            for (j = i + 1; j < m; j++) {
+
+                d = j - i;
+
+                for (k = 0; k < d; k++)  if (ds[i+k] != ds[j+k]) break;
+
+                if ( k == d) n = MAX;
+
+                }
+            }
+
+         }
+
+    if (m > 10) {
+
+        printf ("\n%04d|%02d|",m,c);
+
+        for (k = 0; k < 8; k++) {    
+            printf ("%1d:", ip[k]);
+            }
+        
+        
+        for (k = 0; k < m; k++) {    
+            printf ("%02d>",ds[k]);
+            }
+
+
         }
+    // }
+
     }
 
-
-// output connections above trivial
-
-    if (m > 2) {
-
-        printf ("\n>>");
-
-        for (k = 0; k < 8; k++) {
-            printf ("%2d:",ip[k]);
-            }
-
-        printf ("(%2d)",m);
-
-        for (k = 0; k < m; k++) {
-            printf ("%2d*",z[k]);
-            }
-
-        }
-
-    } } } } } } } }
+    } } } } } } } } 
 
     return (0);
     }
-
