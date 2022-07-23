@@ -10,14 +10,6 @@ Alvaro Barcellos @2022
 
 */
 
-struct NAND {
-    int next;
-    int value;
-    int port[2];
-    };
-
-typedef struct NAND nand;
-
 // number of ports nand
 
     #define MAXCHIPS 16
@@ -29,7 +21,6 @@ typedef struct NAND nand;
     #define MAXCYS 200
 
     #define MINCYS 10
-
 
 /*
 
@@ -60,39 +51,59 @@ int main (int argc, char * argv[]) {
     
     int n, m, i, j, k, d;
     
-    int in[NANDS*2], op[NANDS], np[NANDS];
+    int in[NANDS*2], ip[NANDS*2], op[NANDS], np[NANDS];
 
-    unsigned long int p, pp, q, qq, v[MAXCYS];
+    long unsigned int p, q, r, s, vi, vj;
+
+    unsigned int v[MAXCYS];
  
-//
-// long int uses 8 bytes in gcc 9.4.0
-// 8 * 8 = 64 bits, by 4 gates nand by 74hc00,
-// 64 / 4 = 16, a long int could map 16 chips
+/*
 
-// to not do a 16 level nested for, 
-// using a long int to map all combinations
-//
+ a long int uses 8 bytes in gcc 9.4.0 8 * 8 = 64 bits, 
 
-// count until maximum 
+ a 74hc00 have 4 gates nands, 8 inputs, 4 outputs
 
-    pp = 0;
+ 64 bits / 4 gates = 16 chips, a long int could map 16 chips
 
-    for (p = 1; pp < p; p++) {
+ each input connection could be mapped by 2 bits as
 
-        pp = p;
+ 0=pulldown, 1=pullup, 2=inputs, 3=tristate
+
+ 64 bits/ 2 = 32, a long int could map 32 inputs 
+
+ could use long ints to map all combinations of 16 chips
+
+ */
+
+ // count until maximum 
+
+    for (p = 1; p < (long unsigned int) ~(0x0); p++) {
 
 // continue
 
+    // map connections from outputs
 
-    // map connections, not using pulls to 0 or 1, only from outputs
+        r = p;
 
-        q = p;
+        for (n = 1; n < MAXCHIPS; n++ ) {
 
-        for (n = 0; n < MAXCHIPS; n++ ) {
+            ip[n] = (int) (r & 0x0F);
 
-            ip[n] = (int) (q & 0x0F);
+            r = r >> 4;
 
-            q = q >> 4;
+            }
+
+    // map connections for inputs
+
+    for (q = 1; q < ((long unsigned int) ~(0x0) / 2 + 1) ; q++ ) {
+
+        r = q;
+
+        for (k = 0; k < NANDS*2; k++) {
+
+            in[n] = (int) (r & 0x03);
+
+            r = r >> 2;
 
             }
 
@@ -108,9 +119,17 @@ int main (int argc, char * argv[]) {
             
                 j = i + 1;
 
-                vi = (ip[i] > 1) ? op[ip[i] - 2] : ip[i] ;
+                if (in[i] == 3 || in[j] == 3) {
+                    
+                    np[k] = 0;
+                    
+                    continue;
+                    
+                    }
 
-                vj = (ip[j] > 1) ? op[ip[j] - 2] : ip[j] ;
+                vi = (in[i] > 1) ? op[ip[i]] : in[i] ;
+
+                vj = (in[j] > 1) ? op[ip[j]] : in[j] ;
 
                 np[k] = ! ( vi | vj ) & 0x01;
 
@@ -119,9 +138,7 @@ int main (int argc, char * argv[]) {
     // maps output ports as bits in a unsigned long int
     // for easy verifiy cycles
     //
-        q = 0;
-
-        for (k = 0; k < NANDS; k++ ) {
+        for (q = 0, k = 0; k < NANDS; k++ ) {
         
             op[k] = np[k];
             
@@ -131,7 +148,7 @@ int main (int argc, char * argv[]) {
 
     // maps the results
 
-        v[m++] = q;
+        v[m++] = (unsigned int) q;
     
     // detect cycles
 
@@ -151,13 +168,15 @@ int main (int argc, char * argv[]) {
 
         if (m > MINCYS) {
 
-            printf ("\n%04d|%02d|",m,c);
+            printf ("\n%lu|%lu|%u",p,q,m);
 
-            for (k = 0; k < 8; k++) printf ("%1d:", ip[k]);
-
-            for (k = 0; k < m; k++) printf ("%02d>",ds[k]); 
+            for (k = 0; k < m; k++) printf ("%02d>",v[k]); 
 
             }                                                                                                       
+
+        }
+
+        }
 
         }
 

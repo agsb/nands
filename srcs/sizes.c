@@ -3,8 +3,8 @@
 
 int main ( void ) {
 
-    printf ("%ld\n", sizeof (int));
-    printf ("%ld\n", sizeof (long int));
+    printf ("%ld %u\n", sizeof (int), (unsigned int) ~(0x0) );
+    printf ("%ld %lu\n", sizeof (long int), (long unsigned int) ~(0x0) );
 
     return (0);
     }
